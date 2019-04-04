@@ -4,7 +4,7 @@ Description: |
 Resources:
   Building:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: retain
+    DeletionPolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: building_id
@@ -14,22 +14,15 @@ Resources:
       KeySchema:
         - AttributeName: building_id
           KeyType: HASH
-      LocalSecondaryIndexes:
-        - IndexName: CreatedDate #needed so that we can query by Date
-          KeySchema:
-            - AttributeName: building_id
-              KeyType: HASH
-            - AttributeName: created_date
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: created_date
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
       TableName: !Sub Building-${AWS::StackName}
   POD:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: retain
+    DeletionPolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: pod_id
@@ -47,24 +40,18 @@ Resources:
       KeySchema:
         - AttributeName: pod_id
           KeyType: HASH
+        - AttributeName: created_date
+          KeyType: RANGE
       #We are allowed 5 LSI's and they are faster than GSIs
       LocalSecondaryIndexes:
-        - IndexName: CreatedDate #needed so that we can query by Date
-          KeySchema:
-            - AttributeName: pod_id
-              KeyType: HASH
-            - AttributeName: created_date
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
         - IndexName: PodBuilding #needed to find which building a POD belongs to
           KeySchema:
             - AttributeName: pod_id
               KeyType: HASH
             - AttributeName: building_id
               KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
+          Projection:
+            ProjectionType: ALL
         - IndexName: PodDistribution #needed to find distribution networks of a Pod
           KeySchema:
             - AttributeName: pod_id
@@ -103,24 +90,17 @@ Resources:
         - AttributeName: pod_id
           AttributeType: N
       KeySchema:
-        - AttributeName: pod_id This will group all the Distribution Networks of the same pod on the same partition
+        - AttributeName: pod_id #This will group all the Distribution Networks of the same pod on the same partition
           KeyType: HASH
-      LocalSecondaryIndexes:
-        - IndexName: PodDistribution #needed to find the pod of the distribution
-          KeySchema:
-            - AttributeName: pod_id
-              KeyType: HASH
-            - AttributeName: distribution_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: distribution_id
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
       TableName: !Sub DistributionNetwork-${AWS::StackName}
   Supplier:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: retain
+    DeletionPolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: supplier_id
@@ -132,15 +112,9 @@ Resources:
       KeySchema:
         - AttributeName: supplier_id
           KeyType: HASH
+        - AttributeName: pod_id
+          KeyType: RANGE
       LocalSecondaryIndexes:
-        - IndexName: PodSupplier #needed to find supplier for Pod
-          KeySchema:
-            - AttributeName: supplier_id
-              KeyType: HASH
-            - AttributeName: pod_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
         - IndexName: SupplierComponent #needed to find components for Supplier
           KeySchema:
             - AttributeName: supplier_id
@@ -161,24 +135,15 @@ Resources:
           AttributeType: N
         - AttributeName: supplier_id
           AttributeType: N
-        - AttributeName: pod_id
-          AttributeType: N
       KeySchema:
         - AttributeName: supplier_id # This will group all the inspections by the same supplier on the same partition
           KeyType: HASH
-      LocalSecondaryIndexes:
-        - IndexName: SupplierInspection #needed to find inspections by Supplier
-          KeySchema:
-            - AttributeName: supplier_id
-              KeyType: HASH
-            - AttributeName: inspection_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: inspection_id
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
-      TableName: !Sub Inspection-${AWS::Stackname}
+      TableName: !Sub Inspection-${AWS::StackName}
   Maintenance:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -187,24 +152,15 @@ Resources:
           AttributeType: N
         - AttributeName: supplier_id
           AttributeType: N
-        - AttributeName: pod_id
-          AttributeType: N
       KeySchema:
         - AttributeName: supplier_id # This will group all the inspections by the same supplier on the same partition
           KeyType: HASH
-      LocalSecondaryIndexes:
-        - IndexName: SupplierMaintenance #needed to find maintenance by Supplier
-          KeySchema:
-            - AttributeName: supplier_id
-              KeyType: HASH
-            - AttributeName: maintenance_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: maintenance_id
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
-      TableName: !Sub Maintenance-${AWS::Stackname}
+      TableName: !Sub Maintenance-${AWS::StackName}
   Component:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -218,15 +174,9 @@ Resources:
       KeySchema:
         - AttributeName: distribution_id # Keeps components of the Same Distribution on the same partition
           KeyType: HASH
-      LocalSecondaryIndexes:
-        - IndexName: DistributionComponent #needed to find component by Distribution
-          KeySchema:
-            - AttributeName: distribution_id
-              KeyType: HASH
-            - AttributeName: component_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: component_id
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
         - IndexName: DistributionComponent #needed to find component by Supplier
           KeySchema:
             - AttributeName: supplier_id
@@ -235,6 +185,9 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

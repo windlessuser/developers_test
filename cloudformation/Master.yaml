@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Master Stack for Energicos Test Project
+Parameters:
+  BucketName:
+    Type: String
+    Description: The S3 bucket that contains the cloudformation stacks
+Resources:
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.amazonaws.com/DynamoDBTables.yaml
