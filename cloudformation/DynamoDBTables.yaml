@@ -2,34 +2,18 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: |
   This Stack describes the DynamoDB Tables used for Energicos project
 Resources:
-  Building:
+  Energecos:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     Properties:
-      AttributeDefinitions:
-        - AttributeName: building_id
-          AttributeType: N
-        - AttributeName: created_date
-          AttributeType: N
-      KeySchema:
-        - AttributeName: building_id
-          KeyType: HASH
-        - AttributeName: created_date
-          KeyType: RANGE
+      TableName: !Sub Energecos-${AWS::StackName}
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
-      TableName: !Sub Building-${AWS::StackName}
-  POD:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    Properties:
       AttributeDefinitions:
-        - AttributeName: pod_id
-          AttributeType: N
-        - AttributeName: created_date
-          AttributeType: N
         - AttributeName: building_id
+          AttributeType: N
+        - AttributeName: pod_id
           AttributeType: N
         - AttributeName: distribution_id
           AttributeType: N
@@ -37,21 +21,20 @@ Resources:
           AttributeType: N
         - AttributeName: maintenance_date
           AttributeType: N
+        - AttributeName: supplier_id
+          AttributeType: N
+        - AttributeName: component_id
+          AttributeType: N
+        - AttributeName: inspection_id
+          AttributeType: N
+        - AttributeName: maintenance_id
+          AttributeType: N
       KeySchema:
-        - AttributeName: pod_id
+        - AttributeName: building_id
           KeyType: HASH
-        - AttributeName: created_date
+        - AttributeName: pod_id
           KeyType: RANGE
-      #We are allowed 5 LSI's and they are faster than GSIs
-      LocalSecondaryIndexes:
-        - IndexName: PodBuilding #needed to find which building a POD belongs to
-          KeySchema:
-            - AttributeName: pod_id
-              KeyType: HASH
-            - AttributeName: building_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+      GlobalSecondaryIndexes:
         - IndexName: PodDistribution #needed to find distribution networks of a Pod
           KeySchema:
             - AttributeName: pod_id
@@ -60,6 +43,9 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         - IndexName: PodInpsection #needed to find inspections of a pod (by date)
           KeySchema:
             - AttributeName: pod_id
@@ -68,6 +54,9 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         - IndexName: PodMaintenance #needed to find maintenance of a pod (by date)
           KeySchema:
             - AttributeName: pod_id
@@ -76,45 +65,9 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      TableName: !Sub POD-${AWS::StackName}
-  DistributionNetwork:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: distribution_id
-          AttributeType: N
-        - AttributeName: pod_id
-          AttributeType: N
-      KeySchema:
-        - AttributeName: pod_id #This will group all the Distribution Networks of the same pod on the same partition
-          KeyType: HASH
-        - AttributeName: distribution_id
-          KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      TableName: !Sub DistributionNetwork-${AWS::StackName}
-  Supplier:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: supplier_id
-          AttributeType: N
-        - AttributeName: pod_id
-          AttributeType: N
-        - AttributeName: component_id
-          AttributeType: N
-      KeySchema:
-        - AttributeName: supplier_id
-          KeyType: HASH
-        - AttributeName: pod_id
-          KeyType: RANGE
-      LocalSecondaryIndexes:
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         - IndexName: SupplierComponent #needed to find components for Supplier
           KeySchema:
             - AttributeName: supplier_id
@@ -123,60 +76,31 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      TableName: !Sub Supplier-${AWS::StackName}
-  Inspection:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: inspection_id
-          AttributeType: N
-        - AttributeName: supplier_id
-          AttributeType: N
-      KeySchema:
-        - AttributeName: supplier_id # This will group all the inspections by the same supplier on the same partition
-          KeyType: HASH
-        - AttributeName: inspection_id
-          KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      TableName: !Sub Inspection-${AWS::StackName}
-  Maintenance:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: maintenance_id
-          AttributeType: N
-        - AttributeName: supplier_id
-          AttributeType: N
-      KeySchema:
-        - AttributeName: supplier_id # This will group all the inspections by the same supplier on the same partition
-          KeyType: HASH
-        - AttributeName: maintenance_id
-          KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      TableName: !Sub Maintenance-${AWS::StackName}
-  Component:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: component_id
-          AttributeType: N
-        - AttributeName: distribution_id
-          AttributeType: N
-        - AttributeName: supplier_id
-          AttributeType: N
-      KeySchema:
-        - AttributeName: distribution_id # Keeps components of the Same Distribution on the same partition
-          KeyType: HASH
-        - AttributeName: component_id
-          KeyType: RANGE
-      GlobalSecondaryIndexes:
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: SupplierInspection #needed to find components for Supplier
+          KeySchema:
+            - AttributeName: inspection_id
+              KeyType: HASH
+            - AttributeName: supplier_id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: SupplierMaintenance #needed to find components for Supplier
+          KeySchema:
+            - AttributeName: maintenance_id
+              KeyType: HASH
+            - AttributeName: supplier_id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         - IndexName: DistributionComponent #needed to find component by Supplier
           KeySchema:
             - AttributeName: supplier_id
@@ -188,43 +112,9 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      TableName: !Sub Component-${AWS::StackName}
 Outputs:
-  BuildingTable:
-    Description: The Building DynamoDB Table
-    Value: !GetAtt Building.Arn
+  Table:
+    Description: The DynamoDB Table for the Energecos Project
+    Value: !GetAtt Energecos.Arn
     Export:
-      Name: !Sub BuildingTable-${AWS::StackName}
-  PodTable:
-    Description: The Pod DynamoDB Table
-    Value: !GetAtt POD.Arn
-    Export:
-      Name: !Sub PodTable-${AWS::StackName}
-  DistributionNetworkTable:
-    Description: The Distribution Network DynamoDB Table
-    Value: !GetAtt DistributionNetwork.Arn
-    Export:
-      Name: !Sub DistributionNetwork-${AWS::StackName}
-  SupplierTable:
-    Description: The Supplier DynamoDB Table
-    Value: !GetAtt Supplier.Arn
-    Export:
-      Name: !Sub SupplierTable-${AWS::StackName}
-  InspectionTable:
-    Description: The Inspection DynamoDB Table
-    Value: !GetAtt Inspection.Arn
-    Export:
-      Name: !Sub InspectionTable-${AWS::StackName}
-  MaintainanceTable:
-    Description: The maintance DynamoDB Table
-    Value: !GetAtt Maintenance.Arn
-    Export:
-      Name: !Sub Maintainace-${AWS::StackName}
-  Component:
-    Description: The Component DynamoDB Table
-    Value: !GetAtt Component.Arn
-    Export:
-      Name: !Sub Component-${AWS::StackName}
+      Name: !Sub Energecos-${AWS::StackName}
