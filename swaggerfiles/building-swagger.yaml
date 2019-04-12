@@ -1,0 +1,114 @@
+openapi: 3.0.0
+info:
+  title: Building API
+  description: Supports Buildings
+  version: 0.0.1
+components:
+#  responses:
+#    UnauthorizedError:
+#      description: API key is missing or invalid
+#      headers:
+#        WWW_Authenticate:
+#          schema:
+#            type: string
+#  securitySchemes:
+#      Lambdaauthorizer:
+#        type: apiKey
+#        in: header
+#        name: Authorization
+#        x-amazon-apigateway-authtype: cognito_user_pools
+#        x-amazon-apigateway-authorizer: # An API Gateway Lambda authorizer definition
+#          type: cognito_user_pools # Required property and the value must "token"
+#          providerARNs:
+#          - ${replace_with_cognito_use_pool_ARN}
+  schemas:
+    building:
+      type: object
+      properties:
+        building_id:
+          type: string
+          example: 'BD-1'
+        building_name:
+          type: string
+          example: 'Schönhauser Allee 175'
+        building_street:
+          type: string
+          example: 'Schönhauser Allee'
+        building_street_number:
+          type: integer
+          format: int64
+          example: 175
+        building_zip_code:
+          type: integer
+          format: int64
+          example: 10119
+        building_place:
+          type: string
+          example: 'Berlin'
+        heating_area_total:
+          type: integer
+          format: int64
+          description: 'm^2'
+          example: 2407
+        building_category:
+          type: string
+          example: 'Mehrfamilienhaus'
+        building_year:
+          type: integer
+          format: int64
+          example: 2019
+        number_of_entrances:
+          type: integer
+          format: int64
+          example: 1
+        number_of_floors:
+          type: integer
+          format: int64
+          example: 2
+        number_of_apartments:
+          type: integer
+          format: int64
+          example: 0
+        building_comment:
+          type: string
+          example: "this is a comment"
+#security:
+  #- Lambdaauthorizer: []
+paths:
+  /{buildingID}:
+    get:
+      summary: returns a particular building
+      parameters: 
+        - name: buildingID
+          in: path
+          required: true
+          description: The ID of the particular Building
+          schema:
+            type : string
+      responses:
+       # '401':
+        #  $ref: "#/components/responses/UnauthorizedError"
+        '200':
+          description: JSON body of Building
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/building'
+  /:
+    post:
+      summary: "Creates a New Building"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/building'
+      responses:
+#        '401':
+#          $ref: "#/components/responses/UnauthorizedError"
+        '201':
+          description: Created
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/building'

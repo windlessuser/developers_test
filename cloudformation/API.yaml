@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This Creates the REST API
+Parameters:
+  BucketName:
+    Type: String
+    Description: The S3 bucket that contains the cloudformation stacks
+  HostedZone:
+    Type: String
+    Default: example.com
+  CertificateARN:
+    Type: String
+Resources:
+  ApiDomainName:
+    Type: 'AWS::ApiGateway::DomainName'
+    Properties:
+      CertificateArn: !Ref CertificateARN
+      DomainName: !Sub api.${HostedZone}
+  BuildingAPI:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.amazonaws.com/Building-API.yaml
+      Parameters:
+        DomainName: !Ref ApiDomainName
+        BucketName: !Ref BucketName

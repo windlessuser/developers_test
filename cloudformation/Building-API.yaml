@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates the Building section of the API
+Parameters:
+  BucketName:
+    Type: String
+    Default: energicostestbucket
+  DomainName:
+    Type: String
+    Default: api.example.com
+Resources:
+  Building:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      BodyS3Location:
+        Bucket: !Ref BucketName
+        Key: building-swagger.yaml
+      FailOnWarnings: false
+  BuildingMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: "building"
+      DomainName: !Ref DomainName
+      RestApiId: !Ref Building
+  BuildingGET:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Credentials: !ImportValue APIRole
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - ResponseTemplates:
+              application/json: "#set($inputRoot = $input.path('$'))
+              {
+                \"building_id\": \"$inputRoot.Item.pk_id.S\",
+                \"building_name\": \"$inputRoot.Item.building_name.S\",
+                \"building_street\": \"$inputRoot.Item.building_street.S\",
+                \"building_street_number\": \"$inputRoot.Item.building_street.S\",
+                \"building_zip_code\": \"$inputRoot.Item.building_zip_code.S\",
+                \"building_place\": \"$inputRoot.Item.building_place.S\",
+                \"heating_area_total\": \"$inputRoot.Item.heating_area_total.S\",
+                \"building_category\": \"$inputRoot.Item.building_category.S\",
+                \"building_year\": \"$inputRoot.Item.building_year.S\",
+                \"number_of_entrances\": \"$inputRoot.Item.number_of_entrances.S\",
+                \"number_of_floors\": \"$inputRoot.Item.number_of_floors.S\",
+                \"number_of_apartments\": \"$inputRoot.Item.number_of_apartments.S\",
+                \"building_comment\": \"$inputRoot.Item.building_comment.S\",
+              }"
+            StatusCode: 200
+        RequestTemplates:
+          application/json:
+            Fn::Sub:
+              - "{
+              \"TableName\": \"${Table}\",
+              \"KeyConditionExpression\": \"pk_id = :v1\",
+              \"ExpressionAttributeValues\": {
+                  \":v1\": {
+                      \"S\": \"$input.params('buildingID')\"
+                  }
+                }
+              }"
+              - Table: !ImportValue EnergecosTable
+        Type: AWS
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:dynamodb:action/GetItem
+      OperationName: GetBuilding
+      ResourceId: !GetAtt Building.RootResourceId
+      RestApiId: !Ref Building
+

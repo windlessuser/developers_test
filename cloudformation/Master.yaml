@@ -4,8 +4,34 @@ Parameters:
   BucketName:
     Type: String
     Description: The S3 bucket that contains the cloudformation stacks
+  HostedZone:
+    Type: String
+    Default: example.com
+  CertificateARN:
+    Type: String
 Resources:
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.amazonaws.com/DynamoDBTables.yaml
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.amazonaws.com/IdentityManagement.yaml
+  PolicyStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.amazonaws.com/Policies.yaml
+  APIStack:
+    DependsOn:
+      - PolicyStack
+      - DatabaseStack
+      - CognitoStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.amazonaws.com/API.yaml
+      Parameters:
+        HostedZone: !Ref HostedZone
+        CertificateARN: !Ref CertificateARN
+        BucketName: !Ref BucketName
+

@@ -4,117 +4,20 @@ Description: |
 Resources:
   Energecos:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
     Properties:
-      TableName: !Sub Energecos-${AWS::StackName}
+      TableName:  EnergecosTable
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
       AttributeDefinitions:
-        - AttributeName: building_id
-          AttributeType: N
-        - AttributeName: pod_id
-          AttributeType: N
-        - AttributeName: distribution_id
-          AttributeType: N
-        - AttributeName: inspection_date
-          AttributeType: N
-        - AttributeName: maintenance_date
-          AttributeType: N
-        - AttributeName: supplier_id
-          AttributeType: N
-        - AttributeName: component_id
-          AttributeType: N
-        - AttributeName: inspection_id
-          AttributeType: N
-        - AttributeName: maintenance_id
-          AttributeType: N
+        - AttributeName: pk_id
+          AttributeType: S
       KeySchema:
-        - AttributeName: building_id
+        - AttributeName: pk_id
           KeyType: HASH
-        - AttributeName: pod_id
-          KeyType: RANGE
-      GlobalSecondaryIndexes:
-        - IndexName: PodDistribution #needed to find distribution networks of a Pod
-          KeySchema:
-            - AttributeName: pod_id
-              KeyType: HASH
-            - AttributeName: distribution_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-        - IndexName: PodInpsection #needed to find inspections of a pod (by date)
-          KeySchema:
-            - AttributeName: pod_id
-              KeyType: HASH
-            - AttributeName: inspection_date
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-        - IndexName: PodMaintenance #needed to find maintenance of a pod (by date)
-          KeySchema:
-            - AttributeName: pod_id
-              KeyType: HASH
-            - AttributeName: maintenance_date
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-        - IndexName: SupplierComponent #needed to find components for Supplier
-          KeySchema:
-            - AttributeName: supplier_id
-              KeyType: HASH
-            - AttributeName: component_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-        - IndexName: SupplierInspection #needed to find components for Supplier
-          KeySchema:
-            - AttributeName: inspection_id
-              KeyType: HASH
-            - AttributeName: supplier_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-        - IndexName: SupplierMaintenance #needed to find components for Supplier
-          KeySchema:
-            - AttributeName: maintenance_id
-              KeyType: HASH
-            - AttributeName: supplier_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-        - IndexName: DistributionComponent #needed to find component by Supplier
-          KeySchema:
-            - AttributeName: supplier_id
-              KeyType: HASH
-            - AttributeName: component_id
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
 Outputs:
   Table:
     Description: The DynamoDB Table for the Energecos Project
-    Value: !GetAtt Energecos.Arn
+    Value: !Ref Energecos
     Export:
-      Name: !Sub Energecos-${AWS::StackName}
+      Name: EnergecosTable
