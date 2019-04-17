@@ -85,6 +85,46 @@ paths:
           description: The ID of the particular Building
           schema:
             type : string
+      x-amazon-apigateway-integration:
+        type: AWS
+        uri: arn:aws:apigateway:us-east-2:dynamodb:action/GetItem
+        credentials: arn:aws:iam::868675989909:role/APIGatewayDynamoDBRole
+        httpMethod: POST
+        requestParameters:
+          integration.request.path.buildingID: method.request.path.buildingID
+        requestTemplates:
+          application/json:
+            "{
+              \"TableName\": \"EnergecosTable\",
+              \"Key\": {
+                  \"pk_id\": {
+                      \"S\": \"$input.params('buildingID')\"
+                  }
+                }
+              }"
+        responses:
+          200:
+            "#set($inputRoot = $input.path('$'))
+            {
+              \"building_id\": \"$inputRoot.Item.pk_id.S\",
+              \"building_name\": \"$inputRoot.Item.building_name.S\",
+              \"building_street\": \"$inputRoot.Item.building_street.S\",
+              \"building_street_number\": \"$inputRoot.Item.building_street.S\",
+              \"building_zip_code\": \"$inputRoot.Item.building_zip_code.S\",
+              \"building_place\": \"$inputRoot.Item.building_place.S\",
+              \"heating_area_total\": \"$inputRoot.Item.heating_area_total.S\",
+              \"building_category\": \"$inputRoot.Item.building_category.S\",
+              \"building_year\": \"$inputRoot.Item.building_year.S\",
+              \"number_of_entrances\": \"$inputRoot.Item.number_of_entrances.S\",
+              \"number_of_floors\": \"$inputRoot.Item.number_of_floors.S\",
+              \"number_of_apartments\": \"$inputRoot.Item.number_of_apartments.S\",
+              \"building_comment\": \"$inputRoot.Item.building_comment.S\",
+            }"
+          default:
+            statusCode: 404
+            responseTemplates:
+              application/json:
+                "{\"message\": \"Building Not Found\"}"
       responses:
        # '401':
         #  $ref: "#/components/responses/UnauthorizedError"
@@ -94,6 +134,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/building'
+    put:
+      summary: Update a Building
+      parameters:
+        - name: buildingID
+          in: path
+          required: true
+          description: The ID of the particular Building
+          schema:
+            type: string
+      x-amazon-apigateway-integration:
+        type: AWS
+        uri: arn:aws:apigateway:us-east-2:dynamodb:action/PutItem
+        credentials: arn:aws:iam::868675989909:role/APIGatewayDynamoDBRole
+        httpMethod: POST
+        requestParameters:
+          integration.request.path.buildingID: method.request.path.buildingID
+        requestTemplates:
+          application/json:
+            "{
+               \"TableName\": \"EnergecosTable\",
+               \"Item\": {
+                   \"pk_id\": {
+                       \"S\": \"$input.params('buildingID')\"
+                   },
+                   \"building_name\": {
+                     \"S\" : \"$input.path('$.building_name')\"
+                     },
+                   \"building_street\": {
+                    \"S\" : \"$input.path('$.building_street')\"
+                   },
+                   \"building_street_number\": {
+                     \"S\" : \"$input.path('$.building_street_number')\"
+                    },
+                   \"building_zip_code\": {
+                     \"S\" : \"$input.path('$.building_zip_code')\"
+                    },
+                   \"building_place\": {
+                    \"S\" : \"$input.path('$.building_place')\"
+                   },
+                   \"heating_area_total\": {
+                     \"S\" : \"$input.path('$.heating_area_total')\"
+                    },
+                   \"building_category\": {
+                     \"S\" : \"$input.path('$.building_category')\"
+                    },
+                   \"building_year\": {
+                     \"S\" : \"$input.path('$.building_year')\"
+                    },
+                   \"number_of_entrances\": {
+                     \"S\" : \"$input.path('$.number_of_entrances')\"
+                    },
+                   \"number_of_floors\": {
+                    \"S\" : \"$input.path('$.number_of_floors')\"
+                   },
+                   \"number_of_apartments\": {
+                     \"S\" : \"$input.path('$.number_of_apartments')\"
+                    },
+                   \"building_comment\": {
+                    \"S\" : \"$input.path('$.building_comment')\"
+                   },
+                 }
+             }"
+        responses:
+          default:
+            statusCode: 204
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/building'
+      responses:
+        '204':
+          description: Building Updated
+          content:
+            application/json:
+              schema:
+                {}
   /:
     post:
       summary: "Creates a New Building"
@@ -112,3 +230,57 @@ paths:
             application/json:
                 schema:
                   $ref: '#/components/schemas/building'
+      x-amazon-apigateway-integration:
+        type: AWS
+        uri: arn:aws:apigateway:us-east-2:dynamodb:action/PutItem
+        credentials: arn:aws:iam::868675989909:role/APIGatewayDynamoDBRole
+        httpMethod: POST
+        requestTemplates:
+          application/json:
+            "{
+                     \"TableName\": \"EnergecosTable\",
+                     \"Item\": {
+                         \"pk_id\": {
+                             \"S\": \"$input.path('$.buildingID')\"
+                         },
+                         \"building_name\": {
+                           \"S\" : \"$input.path('$.building_name')\"
+                           },
+                         \"building_street\": {
+                          \"S\" : \"$input.path('$.building_street')\"
+                         },
+                         \"building_street_number\": {
+                           \"S\" : \"$input.path('$.building_street_number')\"
+                          },
+                         \"building_zip_code\": {
+                           \"S\" : \"$input.path('$.building_zip_code')\"
+                          },
+                         \"building_place\": {
+                          \"S\" : \"$input.path('$.building_place')\"
+                         },
+                         \"heating_area_total\": {
+                           \"S\" : \"$input.path('$.heating_area_total')\"
+                          },
+                         \"building_category\": {
+                           \"S\" : \"$input.path('$.building_category')\"
+                          },
+                         \"building_year\": {
+                           \"S\" : \"$input.path('$.building_year')\"
+                          },
+                         \"number_of_entrances\": {
+                           \"S\" : \"$input.path('$.number_of_entrances')\"
+                          },
+                         \"number_of_floors\": {
+                          \"S\" : \"$input.path('$.number_of_floors')\"
+                         },
+                         \"number_of_apartments\": {
+                           \"S\" : \"$input.path('$.number_of_apartments')\"
+                          },
+                         \"building_comment\": {
+                          \"S\" : \"$input.path('$.building_comment')\"
+                         },
+                       }
+                   }"
+        responses:
+          default:
+            statusCode: 201
