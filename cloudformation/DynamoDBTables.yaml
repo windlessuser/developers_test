@@ -12,9 +12,25 @@ Resources:
       AttributeDefinitions:
         - AttributeName: pk_id
           AttributeType: S
+        - AttributeName: tg_id
+          AttributeType: S
       KeySchema:
         - AttributeName: pk_id
           KeyType: HASH
+        - AttributeName: tg_id
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: tg_id
+              KeyType: HASH
+            - AttributeName: pk_id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1 
 Outputs:
   Table:
     Description: The DynamoDB Table for the Energecos Project

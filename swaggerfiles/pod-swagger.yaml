@@ -1,0 +1,29 @@
+openapi: 3.0.0
+info:
+  title: POD API
+  description: Supports Buildings
+  version: 0.0.1
+components:
+  schemas:
+    pod:
+      type: object
+      properties:
+        pod_id:
+          type: string
+          example: POD-1
+        pod_address_street:
+          type: string
+          example: 'Schönhauser Allee'
+        pod_address_additional_attribute:
+          type: string
+        pod_address_street_number:
+          type: integer
+          format: int64
+          example: 175
+        pod_place:
+          type: string
+          example: 'Berlin'
+        pod_comment:
+          type: string
+paths:
+  /
