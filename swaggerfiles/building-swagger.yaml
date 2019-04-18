@@ -178,6 +178,9 @@ paths:
                    \"pk_id\": {
                        \"S\": \"$input.params('buildingID')\"
                    },
+                   \"tg_id\": {
+                       \"S\": \"$input.params('buildingID')\"
+                   },
                    \"building_name\": {
                      \"S\" : \"$input.path('$.building_name')\"
                      },
@@ -233,7 +236,66 @@ paths:
               schema:
                 {}
   /{buildingID}/pod:
-
+    post:
+      summary: Add Pod to Building
+      parameters:
+        - name: buildingID
+          in: path
+          required: true
+          description: The ID of the particular Building
+          schema:
+            type: string
+      x-amazon-apigateway-integration:
+        type: AWS
+        uri: arn:aws:apigateway:us-east-2:dynamodb:action/PutItem
+        credentials: arn:aws:iam::868675989909:role/APIGatewayDynamoDBRole
+        httpMethod: POST
+        requestParameters:
+          integration.request.path.buildingID: method.request.path.buildingID
+        requestTemplates:
+          application/json:
+            "{
+               \"TableName\": \"EnergecosTable\",
+               \"Item\": {
+                   \"pk_id\": {
+                       \"S\": \"pod-$context.requestId\"
+                   },
+                   \"tg_id\": {
+                       \"S\": \"$input.params('buildingID')\"
+                   },
+                   \"pod_address_street\": {
+                     \"S\" : \"$input.path('$.pod_address_street')\"
+                     },
+                   \"pod_address_addiion_attribute\": {
+                    \"S\" : \"$input.path('$.pod_address_addiion_attribute')\"
+                   },
+                   \"pod_address_stree_number\": {
+                     \"S\" : \"$input.path('$.pod_address_stree_number')\"
+                    },
+                   \"pod_place\": {
+                     \"S\" : \"$input.path('$.pod_place')\"
+                    },
+                   \"pod_comment\": {
+                    \"S\" : \"$input.path('$.pod_comment')\"
+                   }
+                 }
+             }"
+        responses:
+          default:
+            statusCode: 204
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/building'
+      responses:
+        '204':
+          description: Building Updated
+          content:
+            application/json:
+              schema:
+                {}
   /:
     post:
       summary: "Creates a New Building"
@@ -263,8 +325,11 @@ paths:
                      \"TableName\": \"EnergecosTable\",
                      \"Item\": {
                          \"pk_id\": {
-                             \"S\": \"$input.path('$.buildingID')\"
+                             \"S\": \"BD-$context.requestId\"
                          },
+                         \"tg_id\": {
+                              \"S\": \"BD-$context.requestId\"
+                          },
                          \"building_name\": {
                            \"S\" : \"$input.path('$.building_name')\"
                            },
